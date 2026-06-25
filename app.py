@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import streamlit as st
 
@@ -47,12 +49,14 @@ left, right = st.columns([1, 1])
 with left:
     st.markdown("## 1) Ingest Documents")
     st.write(f"Raw docs folder: `{settings.RAW_DIR}`")
-    uploaded = st.file_uploader("Upload .txt or .md files", type=["txt", "md"], accept_multiple_files=True)
+    uploaded = st.file_uploader("Upload .txt, .md, or .docx files", type=["txt", "md", "docx"], accept_multiple_files=True)
+
     if st.button("📥 Index Documents"):
         if uploaded:
             for file in uploaded:
                 save_path = settings.RAW_DIR / file.name
                 save_path.write_bytes(file.getbuffer())
+
         docs = ingest_directory(settings.RAW_DIR)
         if not docs:
             st.error("No documents found in data/raw.")
@@ -75,6 +79,7 @@ with right:
         eval_data = result["evaluation"]
         status = eval_data.get("label", "AMBIGUOUS")
         confidence = eval_data.get("confidence", 0.0)
+
         if isinstance(status, RetrievalLabel):
             status = status.value
         elif isinstance(status, str) and "RetrievalLabel." in status:
@@ -98,7 +103,6 @@ with right:
         with col1:
             st.markdown("### Retrieved Chunks")
             for chunk in result.get("retrieved_chunks", []):
-                meta = chunk.get("metadata", {})
                 st.info(
                     f"📄 **Source:** {chunk.get('source')} | **Chunk:** {chunk.get('chunk_id')}
 
@@ -110,6 +114,7 @@ with right:
                 st.markdown("---")
                 st.markdown("**Corrective Query:**")
                 st.code(eval_data.get("rewritten_query", "(none)"))
+
                 st.markdown("**Corrective Web Context:**")
                 for w_chunk in result.get("web_chunks", []):
                     st.warning(w_chunk.get("text", ""))
@@ -124,5 +129,6 @@ with right:
             )
             st.markdown("**Provenance:**")
             st.json(result.get("generation", {}).get("sources", []))
+
             with st.expander("JSON Payload"):
                 st.json(result)
