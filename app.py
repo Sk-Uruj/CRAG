@@ -24,11 +24,14 @@ ensure_directories()
 
 st.title("🚦 ThoughtsTracer AI")
 st.subheader("Corrective Retrieval-Augmented Generation (CRAG) Engine")
-st.caption("A real Chroma-backed retrieval pipeline with Gemini-powered quality-control routing.")
+st.caption("A Chroma-backed retrieval pipeline with Gemini-powered quality-control routing.")
 st.markdown("---")
 
 if not (os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")):
-    st.warning("⚠️ GOOGLE_API_KEY (or GEMINI_API_KEY) not found. Embeddings/evaluation will fail until configured.")
+    st.warning(
+        "⚠️ GOOGLE_API_KEY (or GEMINI_API_KEY) not found. "
+        "Embeddings/evaluation will fail until configured."
+    )
 
 
 @st.cache_resource
@@ -49,7 +52,11 @@ left, right = st.columns([1, 1])
 with left:
     st.markdown("## 1) Ingest Documents")
     st.write(f"Raw docs folder: `{settings.RAW_DIR}`")
-    uploaded = st.file_uploader("Upload .txt, .md, or .docx files", type=["txt", "md", "docx"], accept_multiple_files=True)
+    uploaded = st.file_uploader(
+        "Upload .txt, .md, or .docx files",
+        type=["txt", "md", "docx"],
+        accept_multiple_files=True,
+    )
 
     if st.button("📥 Index Documents"):
         if uploaded:
@@ -61,7 +68,11 @@ with left:
         if not docs:
             st.error("No documents found in data/raw.")
         else:
-            chunks = chunk_documents(docs, chunk_size=settings.CHUNK_SIZE, overlap=settings.CHUNK_OVERLAP)
+            chunks = chunk_documents(
+                docs,
+                chunk_size=settings.CHUNK_SIZE,
+                overlap=settings.CHUNK_OVERLAP,
+            )
             texts = [c.text for c in chunks]
             embeddings = embedder.embed_texts(texts)
             vectorstore.reset()
@@ -104,9 +115,7 @@ with right:
             st.markdown("### Retrieved Chunks")
             for chunk in result.get("retrieved_chunks", []):
                 st.info(
-                    f"📄 **Source:** {chunk.get('source')} | **Chunk:** {chunk.get('chunk_id')}
-
-"
+                    f"📄 **Source:** {chunk.get('source')} | **Chunk:** {chunk.get('chunk_id')}\n\n"
                     f"{chunk.get('text', '')}"
                 )
 
